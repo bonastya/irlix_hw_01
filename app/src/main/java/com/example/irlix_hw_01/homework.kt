@@ -1,7 +1,6 @@
 package com.example.irlix_hw_01
 
-import android.content.ContentValues.TAG
-import android.util.Log
+import java.lang.Exception
 
 interface Publication {
     val price:Double
@@ -88,6 +87,44 @@ fun main(){
     }
     sum(10, 15)
 
+    println("--------------------------------------------")
+    println("Ленивое поле startTime класса User")
+    //одно и то же поле два раза
+    val user = User(1,"nastya",21,Type.FULL)
+    println("Время:"+user.startTime)
+    Thread.sleep(1000)
+    println("Время:"+user.startTime)
+
+    println("--------------------------------------------")
+    println("Работа со списками User")
+
+    val userList:MutableList<User> = mutableListOf(user)
+    userList.apply {
+        userList.add(User(2,"olya",22,Type.DEMO))
+        userList.add(User(3,"kirill",20,Type.FULL))
+        userList.add(User(4,"anna",21,Type.DEMO))
+        userList.add(User(5,"sophie",18,Type.DEMO))
+        userList.add(User(6,"vlad",210,Type.FULL))
+    }
+
+    val userListWithFull:List<User> = userList.filter { user -> user.type == Type.FULL}
+
+    val userNamesListWithFull:List<String> =  userListWithFull.map { user -> user.name}
+    println("Первый user списка: "+userNamesListWithFull.first())
+    println("Последний user списка: "+userNamesListWithFull.last())
+
+
+    val registration = Action.Registration()
+    val login = Action.LogIn(user)
+    val logout = Action.LogOut()
+
+    //doAction(registration)
+    doAction(login)
+    //doAction(logout)
+
+    auth({ updateCache() }, login.user)
+
+
 
 
 }
@@ -96,3 +133,69 @@ fun buy(publication:Publication){
     println("The purchase is complete. The purchase amount was "+publication.price)
 
 }
+
+enum class Type() {
+    DEMO,
+    FULL
+}
+
+data class User(val id:Int, val name: String, val age:Int, val type: Type){
+
+    val startTime: String by lazy { java.util.Calendar.getInstance().time.toString() }
+
+}
+
+fun User.isElderThan18(){
+    if(this.age>=18){
+        println("User старше 18 лет ")
+    }
+    else
+        throw Exception("User младше 18 лет")
+}
+
+interface AuthCallback {
+    fun authSuccess() {}
+    fun authFailed() {}
+}
+
+val authCallback = object: AuthCallback{
+    override fun authSuccess() {
+        println("Авторизация успешна")
+    }
+    override fun authFailed() {
+        println("Авторизация не успешна")
+    }
+}
+
+inline fun auth( updateCache: () -> Unit, user: User){
+//-	Реализовать inline функцию auth,
+// принимающую в качестве параметра функцию updateCache.
+// Функция updateCache должна выводить в лог информацию об обновлении кэша.
+
+    try{
+        user.isElderThan18()
+        authCallback.authSuccess()
+        updateCache()
+    }
+    catch(e:Exception) {
+        authCallback.authFailed()
+    }
+
+
+}
+
+fun updateCache(){
+    println("Обновление кэша")
+}
+
+
+sealed class Action {
+    class Registration(){}
+    class LogIn(val user: User){}
+    class LogOut(){}
+}
+
+fun doAction(action: Action.LogIn){
+
+}
+
