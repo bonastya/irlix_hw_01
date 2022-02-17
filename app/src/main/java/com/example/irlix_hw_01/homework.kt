@@ -118,9 +118,9 @@ fun main(){
     val login = Action.LogIn(user)
     val logout = Action.LogOut()
 
-    //doAction(registration)
+    doAction(registration)
     doAction(login)
-    //doAction(logout)
+    doAction(logout)
 
     auth({ updateCache() }, login.user)
 
@@ -190,12 +190,18 @@ fun updateCache(){
 
 
 sealed class Action {
-    class Registration(){}
-    class LogIn(val user: User){}
-    class LogOut(){}
+    class Registration(): Action(){}
+    class LogIn(val user: User): Action(){}
+    class LogOut(): Action(){}
 }
 
-fun doAction(action: Action.LogIn){
+fun doAction(action: Action){
 
+    if (action is Action.LogIn)
+        println("Action LogIn")
+    if (action is Action.LogOut)
+        println("Action LogOut")
+    if (action is Action.Registration)
+        println("Action Registration")
 }
 
